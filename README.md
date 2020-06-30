@@ -1,5 +1,5 @@
 # Interactive rank test
-Which Wilcoxon should we use? An interactive rank test and other alternatives.
+This code is an accompaniment to the paper titled "Which Wilcoxon should we use? An interactive rank test and other alternatives", and produce all plots in the paper.
 
 ## Overview
 The i-Wilcoxon test is a test for two-sample comparison with unpaired data in a randomized trial that allows human interaction.
