@@ -1,4 +1,4 @@
-# i-Wilcoxon
+# Interactive rank test
 Which Wilcoxon should we use? An interactive rank test and other alternatives.
 
 ## Overview
