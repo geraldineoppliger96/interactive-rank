@@ -15,7 +15,9 @@ $Rscript plots.R
 
 ## Functions and files
 tests.R: the i-Wilcoxon test; variants of the Wilcoxon test; linear-CATE-test.
+
 sim_dat.R: simulate outcomes of different types.
+
 result/.: p-values of each method in each experiment.
 
 ## Dependencies
