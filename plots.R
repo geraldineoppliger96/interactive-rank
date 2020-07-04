@@ -1,4 +1,6 @@
-dir.create("figure")
+if (!file.exists("figure")) {
+  dir.create("figure")
+}
 source("input.R")
 library(ggpubr)
 colSes = function(m) {apply(m, 2, sd)/sqrt(nrow(m))} #standard error
@@ -18,7 +20,7 @@ plot_df = function(mean_power, compare_methods, legend_name){
           panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_line(colour = "grey"),
           text = element_text(size = 15),
-          legend.position = c(0.8,0.52), legend.text = element_text(size = 6)) +
+          legend.position = c(0.8,0.6), legend.text = element_text(size = 6)) +
     guides(fill=guide_legend(nrow=2, byrow=TRUE)) +
     xlab("Scale of treatment effect") + ylab("power") +
     scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
@@ -26,76 +28,81 @@ plot_df = function(mean_power, compare_methods, legend_name){
   return(p)
 }
 
-
 ############## Figure 2
-mode = "linear_both"
+mode = "linear"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                     byrow = TRUE, nrow = length(x)))})
-temp_name = names(result[[1]][[1]])
-temp_name[c(2, 6, 5, 4)] = c("CovAdj-Wilcoxon", "interactive",
-                             "interactive-robust", "interactive-quadratic")
-legend_name = factor(temp_name, levels = temp_name[c(1,2,3,6,5,4)])
-compare_methods = c("CovAdj-Wilcoxon", "CATE-test",
-                    "interactive")
+legend_name = names(result[[1]][[1]]); legend_name[c(1,5)] = c("CovAdj-Wilcoxon", "i-Wilcoxon")
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("CovAdj-Wilcoxon", "linear-CATE-test",
+                    "i-Wilcoxon")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name)
 ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
-mode = "blind_linear_both"
+mode = "linear_blind"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                     byrow = TRUE, nrow = length(x)))})
-temp_name = names(result[[1]][[1]])
-temp_name[c(2, 5, 4)] = c("CovAdj-Wilcoxon", "interactive",
-                             "interactive-robust")
-legend_name = factor(temp_name, levels = temp_name[c(1,2,3,5,4)])
-compare_methods = c("CovAdj-Wilcoxon", "CATE-test",
-                    "interactive")
+legend_name = names(result[[1]][[1]]); legend_name[c(1,5)] = c("CovAdj-Wilcoxon", "i-Wilcoxon")
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("CovAdj-Wilcoxon", "linear-CATE-test",
+                    "i-Wilcoxon")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name)
 ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
-
 
 ############## Figure 3
-mode = "linear_both_control_skewed"
+mode = "linear_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                     byrow = TRUE, nrow = length(x)))})
-temp_name = names(result[[1]][[1]])
-temp_name[c(2, 6, 5, 4)] = c("CovAdj-Wilcoxon-robust", "interactive-original",
-                             "interactive-robust", "interactive-quadratic")
-legend_name = factor(temp_name, levels = temp_name[c(1,2,3,6,5,4)])
-compare_methods = c("CovAdj-Wilcoxon-robust", "CATE-test",
-                    "interactive-original", "interactive-robust")
+legend_name = names(result[[1]][[1]]); legend_name[5] = c("i-Wilcoxon-original")
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("CovAdj-Wilcoxon-robust", "linear-CATE-test",
+                    "i-Wilcoxon-original", "i-Wilcoxon-robust")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name)
 ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-
 ############## Figure 4
-mode = "linear_pos"
+mode = "quadratic"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
-temp_name = names(result[[1]][[1]])
-temp_name[c(2, 6, 5, 4)] = c("CovAdj-Wilcoxon-quadratic", "interactive-original",
-                              "interactive-robust", "interactive-quadratic")
-legend_name = factor(temp_name, levels = temp_name[c(1,2,3,6,5,4)])
-compare_methods = c("CovAdj-Wilcoxon-quadratic", "CATE-test",
-                    "interactive-robust", "interactive-quadratic")
+legend_name = names(result[[1]][[1]])
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("CovAdj-Wilcoxon-quadratic", "linear-CATE-test",
+                    "i-Wilcoxon-robust", "i-Wilcoxon-quadratic")
+p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
+            legend_name = legend_name)
+ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
+       plot = p, width = 4, height = 3.6)
+
+############## Figure 10
+mode = "linear_cauchy"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
+                                                        byrow = TRUE, nrow = length(x)))})
+sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
+                                                    byrow = TRUE, nrow = length(x)))})
+legend_name = names(result[[1]][[1]]); legend_name[5] = c("i-Wilcoxon-original")
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("CovAdj-Wilcoxon-robust", "linear-CATE-test",
+                    "i-Wilcoxon-original", "i-Wilcoxon-robust")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name)
 ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
@@ -104,21 +111,20 @@ ggsave(filename = paste("figure/interactive_",mode,".png", sep = ""),
 
 
 ############### Figure 5(a)
-mode = "varyx_small"
+mode = "dense_weak"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-mode = "cauchy_varyx_small"
+mode = "dense_weak_cauchy"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power_cauchy = sapply(rejection, function(x){
+mean_power_cauchy = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-compare_methods = c("R-Gaussian", "R-Cauchy", "R(X, 1-A)-Gaussian", "R(X, 1-A)-Cauchy")
+compare_methods = c("R(x)-Gaussian", "R(X)-Cauchy", "R(X, 1-A)-Gaussian", "R(X, 1-A)-Cauchy")
 
 legend_name = factor(compare_methods, levels = compare_methods)
-df_combine = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                  each = 4),
-                     power = as.vector(rbind(mean_power[c(1,23),],
-                                             mean_power_cauchy[c(1,23),])[c(1,3,2,4),]),
+df_combine = data.frame(mu_seq = rep(0:5, each = 4),
+                     power = as.vector(rbind(mean_power[c(1,2),],
+                                             mean_power_cauchy[c(1,2),])[c(1,3,2,4),]),
                      grp = rep(legend_name,
                                ncol(mean_power)))
 p = ggplot(data = df_combine,
@@ -143,23 +149,15 @@ ggsave(filename = paste("figure/outcome_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
+legend_name = factor(methods_var_Wilcoxon, levels = methods_var_Wilcoxon)
 ############### Figure 5(b)
-mode = "varyx_big_more"
+mode = "sparse_strong"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-compare_methods = c("R", "R(X, 1-A)")
+compare_methods = c("R(X)", "R(X, 1-A)")
 
-temp_name = methods_unpair
-temp_name[c(1, 23, 20, 8, 15)] =
-  c("R",
-    "R(X, 1-A)",  "R - hat(R)(X, 1 - A)",
-    "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
-    "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-legend_name = factor(temp_name, levels = c(temp_name[c(1, 23, 20, 8, 15)],
-                                           temp_name[-c(1, 23, 20, 8, 15)]))
-df_power = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                   each = nrow(mean_power)),
+df_power = data.frame(mu_seq = rep(0:5, each = nrow(mean_power)),
                       power = as.vector(mean_power),
                       grp = rep(legend_name,
                                 ncol(mean_power)))
@@ -177,7 +175,7 @@ p = ggplot(data = subset(df_power, (grp %in% compare_methods)),
         panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
         panel.grid.minor = element_line(colour = "grey"),
         text = element_text(size = 15),
-        legend.position = c(0.77, 0.21), legend.text = element_text(size = 8)) +
+        legend.position = c(0.16, 0.86), legend.text = element_text(size = 8)) +
   xlab("Scale of treatment effect") + ylab("power") +
   scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 plot(p)
@@ -186,22 +184,13 @@ ggsave(filename = paste("figure/outcome_",mode,".png", sep = ""),
 
 
 ############### Figure 5(c)
-mode = "varyx_small_control_skewed"
+mode = "dense_weak_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-compare_methods = c("R", "R(X, 1-A)")
+compare_methods = c("R(X)", "R(X, 1-A)")
 
-temp_name = methods_unpair
-temp_name[c(1, 23, 20, 8, 15)] =
-  c("R",
-    "R(X, 1-A)",  "R - hat(R)(X, 1 - A)",
-    "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
-    "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-legend_name = factor(temp_name, levels = c(temp_name[c(1, 23, 20, 8, 15)],
-                                           temp_name[-c(1, 23, 20, 8, 15)]))
-df_power = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                   each = nrow(mean_power)),
+df_power = data.frame(mu_seq = rep(0:5, each = nrow(mean_power)),
                       power = as.vector(mean_power),
                       grp = rep(legend_name,
                                 ncol(mean_power)))
@@ -219,7 +208,7 @@ p = ggplot(data = subset(df_power, (grp %in% compare_methods)),
         panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
         panel.grid.minor = element_line(colour = "grey"),
         text = element_text(size = 15),
-        legend.position = c(0.77, 0.21), legend.text = element_text(size = 8)) +
+        legend.position = c(0.16, 0.86), legend.text = element_text(size = 8)) +
   xlab("Scale of treatment effect") + ylab("power") +
   scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 plot(p)
@@ -228,23 +217,14 @@ ggsave(filename = paste("figure/outcome_",mode,".png", sep = ""),
 
 
 ############### Figure 6(a)
-mode = "varyx_small_control_skewed"
+mode = "dense_weak_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
 compare_methods = c("R(X, 1-A)",  "R - hat(R)(X, 1 - A)")
-  
-temp_name = methods_unpair
-temp_name[c(1, 23, 20, 8, 15)] =
-  c("R",
-    "R(X, 1-A)",  "R - hat(R)(X, 1 - A)",
-    "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
-    "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-legend_name = factor(temp_name, levels = c(temp_name[c(1, 23, 20, 8, 15)],
-                                           temp_name[-c(1, 23, 20, 8, 15)]))
-df_power = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                   each = nrow(mean_power)),
+names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
+
+df_power = data.frame(mu_seq = rep(0:5, each = nrow(mean_power)),
                       power = as.vector(mean_power),
                       grp = rep(legend_name,
                                 ncol(mean_power)))
@@ -270,23 +250,15 @@ ggsave(filename = paste("figure/outcome_compare_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
-mode = "varyx_big_more_control_skewed"
+############### Figure 6(b)
+mode = "sparse_strong_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
 compare_methods = c("R(X, 1-A)",  "R - hat(R)(X, 1 - A)")
+names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
 
-temp_name = methods_unpair
-temp_name[c(1, 23, 20, 8, 15)] =
-  c("R",
-    "R(X, 1-A)",  "R - hat(R)(X, 1 - A)",
-    "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
-    "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-legend_name = factor(temp_name, levels = c(temp_name[c(1, 23, 20, 8, 15)],
-                                           temp_name[-c(1, 23, 20, 8, 15)]))
-df_power = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                   each = nrow(mean_power)),
+df_power = data.frame(mu_seq = rep(0:5, each = nrow(mean_power)),
                       power = as.vector(mean_power),
                       grp = rep(legend_name,
                                 ncol(mean_power)))
@@ -312,18 +284,10 @@ ggsave(filename = paste("figure/outcome_compare_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
-################ Figure 7
+
 plot_df = function(mean_power, compare_methods, label_names) {
-  temp_name = methods_unpair
-  temp_name[c(1, 23, 20, 8, 15)] =
-    c("R",
-      "R(X, 1-A)",  "R - hat(R)(X, 1 - A)",
-      "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
-      "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-  legend_name = factor(temp_name, levels = c(temp_name[c(1, 23, 20, 8, 15)],
-                                             temp_name[-c(1, 23, 20, 8, 15)]))
-  df_power = data.frame(mu_seq = rep(as.numeric(colnames(mean_power)),
-                                     each = nrow(mean_power)),
+  legend_name = factor(methods_var_Wilcoxon, levels = methods_var_Wilcoxon)
+  df_power = data.frame(mu_seq = rep(0:5, each = nrow(mean_power)),
                         power = as.vector(mean_power),
                         grp = rep(legend_name,
                                   ncol(mean_power)))
@@ -347,153 +311,117 @@ plot_df = function(mean_power, compare_methods, label_names) {
   plot(p)
   return(p)
 }
-
-mode = "varyx_big_more"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
-  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
+################ Figure 7
+compare_methods = c("R(X)",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
+label_names = expression(R(X), R - hat(R)(X, 1 - A),
                          abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
+
+mode = "sparse_strong"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){
+  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "cauchy_varyx_big_more"
+mode = "sparse_strong_cauchy"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "varyx_big_more_control_skewed"
+mode = "sparse_strong_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
 ################### Figure 8
-mode = "varyx_small"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
-  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
+compare_methods = c("R(X)",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
+label_names = expression(R(X), R - hat(R)(X, 1 - A),
                          abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
+
+mode = "dense_weak"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){
+  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "cauchy_varyx_small"
+mode = "dense_weak_cauchy"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "varyx_small_control_skewed"
+mode = "dense_weak_control_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
-p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
-ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
-       plot = p, width = 4, height = 3.6)
-
-mode = "pos_big"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
-  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
-p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
-ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
-       plot = p, width = 4, height = 3.6)
-
-mode = "both_big"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
-  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
-p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
-ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
-       plot = p, width = 4, height = 3.6)
-
-mode = "both_small"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
-  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
-names = expression(R(X, 1-A), R - hat(R)(X, 1 - A))
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)", "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|")
-label_names = expression(R, R - hat(R)(X, 1 - A),
-                         abs( R - hat(R)(X, 1 - A)) - abs( R - hat(R)(X, A)))
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/ranks_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 
 ################### Figure 9
-compare_methods = c("R",  "R - hat(R)(X, 1 - A)",
+compare_methods = c("R(X)",  "R - hat(R)(X, 1 - A)",
                     "|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|",
                     "S(|R - hat(R)(X, 1 - A)| - |R - hat(R)(X, A)|)")
-label_names = expression(R, R - hat(R)(X, 1 - A), 
+label_names = expression(R(X), R - hat(R)(X, 1 - A), 
                          paste("|", R - hat(R)(X, 1 - A), "|") - paste("|", R - hat(R)(X, A), "|"),
                          S %.% (paste("|", R - hat(R)(X, 1 - A), "|") - paste("|", R - hat(R)(X, A), "|")))
 
-mode = "both_small"
+mode = "both_pos_strong"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "varyx_big_more"
+mode = "both_sparse_strong"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "varyx_big_more_control_skewed"
+mode = "both_dense_weak"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
-mode = "cauchy_varyx_big_more"
+mode = "sparse_strong"
 load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(rejection, function(x){
+mean_power = sapply(result, function(x){
+  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
+p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
+ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
+       plot = p, width = 4, height = 3.6)
+
+mode = "sparse_strong_control_skewed"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){
+  colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
+p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
+ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
+       plot = p, width = 4, height = 3.6)
+
+mode = "sparse_strong_cauchy"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){
   colMeans(matrix(unlist(x) < alpha, byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods, label_names = label_names)
 ggsave(filename = paste("figure/signed_",mode,".png", sep = ""),
