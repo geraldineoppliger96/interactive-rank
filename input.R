@@ -5,10 +5,12 @@ e_D = "Gaussian"
 blind = NA
 redundant = NA
 R = 500
+iter_round = 100
 
 methods_interactive = c("CovAdj-Wilcoxon-linear", "CovAdj-Wilcoxon-robust", "CovAdj-Wilcoxon-quadratic",
                         "linear-CATE-test",
-                        "i-Wilcoxon-linear", "i-Wilcoxon-robust", "i-Wilcoxon-quadratic")
+                        "i-Wilcoxon-linear", "i-Wilcoxon-robust",
+                        "i-Wilcoxon-quadratic")
 
 n_permute = 200
 alg_type = "RF"

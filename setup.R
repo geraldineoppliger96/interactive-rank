@@ -2,7 +2,7 @@ source("sim_dat.R")
 source("tests.R")
 source("experiment_wrap.R")
 
-packages = c("magrittr", "reshape2", "ggplot2", "randomForest",
+packages = c("magrittr", "reshape2", "ggplot2", "randomForest", "quantregForest",
              "ash", "caTools", "tibble", "dplyr", "tidyr", "doParallel", "foreach",
              "energy", "MASS")
 for (one_pack in packages){

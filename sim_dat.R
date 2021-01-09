@@ -20,14 +20,23 @@ sample_generator = function(n, m, treatment_type, control_type, C_delta, e_D,
   else if (treatment_type == "quadratic") {
     Delta = C_delta*(X[,3]^2 - 1)*3/5
   } 
+  else if (treatment_type == "pos") {
+    Delta = C_delta*(X[,1]/8 - (X[,3] > 1)/5) 
+  }
   else if (treatment_type == "dense_weak") {
     Delta = C_delta*(1 - abs(sin(3*X[,3])))
   } 
   else if (treatment_type == "sparse_strong") {
     Delta = C_delta*(2*exp(X[,3])*(X[,3] > 1.5))
   }
+  else if (treatment_type == "sparse_strong_smallN") {
+    Delta = C_delta*(2*exp(X[,3])*(X[,3] > 1))
+  }
   else if (treatment_type == "both_pos_strong") {
     Delta = C_delta*(exp(X[,3])*(X[,3] > 2) - X[,1]/2)
+  }
+  else if (treatment_type == "both_pos_strong_smallN") {
+    Delta = C_delta*(exp(X[,3])*(X[,3] > 1) - X[,1]/2)
   }
   else if (treatment_type == "both_sparse_strong") {
     Delta = C_delta*((X[,3])^3*(abs(X[,3]) > 1))
