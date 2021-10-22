@@ -45,6 +45,47 @@ experiment_interactive = function(para_vary){
         i_Wilcoxon(dat, alg_type = "quadratic", iter_round = iter_round)
     }
     
+    cand_set = rep(FALSE, n); cand_set[sample(n, n*split_pct)] = TRUE
+    if ("i-bid-linear" %in% methods_interactive) {
+      p_val["i-bid-linear"] = 
+        i_bid(dat, cand_set = cand_set, alg_type = "linear", scale = scale, iter_round = iter_round)
+    }
+    if ("i-bid-robust" %in% methods_interactive) {
+      p_val["i-bid-robust"] = 
+        i_bid(dat, cand_set = cand_set, alg_type = "robust", scale = scale, iter_round = iter_round)
+    }
+    if ("i-bid-quadratic" %in% methods_interactive) {
+      p_val["i-bid-quadratic"] = 
+        i_bid(dat, cand_set = cand_set, alg_type = "quadratic", scale = scale, iter_round = iter_round)
+    }
+    
+    if ("i-bid-cross-linear" %in% methods_interactive) {
+      p_val["i-bid-cross-linear"] = 
+        i_bid_cross(dat, alg_type = "linear", scale = scale, iter_round = iter_round)
+    }
+    if ("i-bid-cross-robust" %in% methods_interactive) {
+      p_val["i-bid-cross-robust"] = 
+        i_bid_cross(dat, alg_type = "robust", scale = scale, iter_round = iter_round)
+    }
+    if ("i-bid-cross-quadratic" %in% methods_interactive) {
+      p_val["i-bid-cross-quadratic"] = 
+        i_bid_cross(dat, alg_type = "quadratic", scale = scale, iter_round = iter_round)
+    }
+    
+    if ("end-bid-cross-linear" %in% methods_interactive) {
+      p_val["end-bid-cross-linear"] = 
+        end_bid_cross(dat, alg_type = "linear", scale = scale)
+    }
+    if ("end-bid-cross-robust" %in% methods_interactive) {
+      p_val["end-bid-cross-robust"] = 
+        end_bid_cross(dat, alg_type = "robust", scale = scale)
+    }
+    if ("end-bid-cross-quadratic" %in% methods_interactive) {
+      p_val["end-bid-cross-quadratic"] = 
+        end_bid_cross(dat, alg_type = "quadratic", scale = scale)
+    }
+    
+    
     if ("i-Wilcoxon-linear-signedA" %in% methods_interactive) {
       p_val["i-Wilcoxon-linear-signedA"] = 
         i_Wilcoxon(dat, alg_type = "linear", sum_type = "signed_A", order_by = "abs_pred",
@@ -78,8 +119,8 @@ experiment_interactive = function(para_vary){
     }
     return(p_val)
   }
-  p_vals = lapply(1:R, wrapper_func)
-  # p_vals = mclapply(1:R, wrapper_func, mc.cores = detectCores())
+  # p_vals = lapply(1:R, wrapper_func)
+  p_vals = mclapply(1:R, wrapper_func, mc.cores = detectCores())
   return(p_vals)
 }
 

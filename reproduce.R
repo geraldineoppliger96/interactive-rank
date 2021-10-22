@@ -6,10 +6,12 @@ if (!file.exists("result")) {
 
 methods_updated = c("CovAdj-Wilcoxon-linear", "CovAdj-Wilcoxon-robust",
                     "CovAdj-Wilcoxon-quadratic", "linear-CATE-test",
-                    "i-Wilcoxon-linear", "i-Wilcoxon-robust",
-                    "i-Wilcoxon-quadratic",
-                    "i-Wilcoxon-linear-signedA", "i-Wilcoxon-robust-signedA",
-                    "i-Wilcoxon-quadratic-signedA")
+                    "i-Wilcoxon-robust-signedA_adapt",
+                    "i-Wilcoxon-quadratic-signedA_adapt",
+                    "i-bid-linear", "i-bid-robust", "i-bid-quadratic",
+                    "i-bid-linear-bi", "i-bid-robust-bi", "i-bid-quadratic-bi",
+                    "i-bid-cross-linear", "i-bid-cross-robust", "i-bid-cross-quadratic")
+
 ############################ Figure 2 ##################################
 treatment_type = "linear"
 max_scale = 5; Cd_seq = seq(0, max_scale, length.out = 6)
@@ -22,7 +24,7 @@ for (Cd in Cd_seq) {
                    list(name = "C_delta", value = Cd))
   result[[as.character(Cd)]] = experiment_interactive(para_vary)
 }
-save(result, file=paste("result/", treatment_type,"_updated.Rdata", sep = ""))
+save(result, file=paste("result/i_bet_", treatment_type,"_bell.Rdata", sep = ""))
 
 
 
@@ -38,10 +40,28 @@ for (Cd in Cd_seq) {
                    list(name = "C_delta", value = Cd))
   result[[as.character(Cd)]] = experiment_interactive(para_vary)
 }
-save(result, file=paste("result/", treatment_type,"_control_skewed_updated.Rdata", sep = ""))
+save(result, file=paste("result/i_bet_", treatment_type,"_skewed.Rdata", sep = ""))
+
+
 
 
 ############################ Figure 4 ##################################
+treatment_type = "linear"
+max_scale = 5; Cd_seq = seq(0, max_scale, length.out = 6)
+result = list()
+for (Cd in Cd_seq) {
+  para_vary = list(list(name = "treatment_type", value = treatment_type),
+                   list(name = "control_type", value = "bell"),
+                   list(name = "e_D", value = "Cauchy"),
+                   list(name = "methods_interactive",
+                        value = methods_updated),
+                   list(name = "C_delta", value = Cd))
+  result[[as.character(Cd)]] = experiment_interactive(para_vary)
+}
+save(result, file=paste("result/i_bet_", treatment_type,"_cauchy.Rdata", sep = ""))
+
+
+############################ Figure 5 ##################################
 treatment_type = "quadratic"
 max_scale = 5; Cd_seq = seq(0, max_scale, length.out = 6)
 result = list()
@@ -53,9 +73,10 @@ for (Cd in Cd_seq) {
                    list(name = "C_delta", value = Cd))
   result[[as.character(Cd)]] = experiment_interactive(para_vary)
 }
-save(result, file=paste("result/", treatment_type,"_updated.Rdata", sep = ""))
+save(result, file=paste("result/i_bet_", treatment_type,"_bell.Rdata", sep = ""))
 
 
+if(0){
 ############################ Figure 12 ##################################
 treatment_type = "linear"
 max_scale = 5; Cd_seq = seq(0, max_scale, length.out = 6)
@@ -70,6 +91,7 @@ for (Cd in Cd_seq) {
   result[[as.character(Cd)]] = experiment_interactive(para_vary)
 }
 save(result, file=paste("result/", treatment_type,"_adapt.Rdata", sep = ""))
+
 
 treatment_type = "linear"
 max_scale = 5; Cd_seq = seq(0, max_scale, length.out = 6)
@@ -454,8 +476,8 @@ for (Cd in Cd_seq) {
   result[[as.character(Cd)]] = experiment_var_Wilcoxon(para_vary)
 }
 save(result, file=paste("result/", treatment_type, "_small.Rdata", sep = ""))
-
-
+}
+}
 
 
 

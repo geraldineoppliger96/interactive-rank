@@ -8,8 +8,10 @@
 # sum_type:    strategy to decide weights
 # C_delta:     scale of treatment effect, used when alg_type = "oracle"
 # iter_round:  number of iterations we skip to update the modeling
+# sum_known:   whether the total number of treatments are known
+# scale:       a factor to control the magnitude(range) of bets
 i_Wilcoxon = function(dat, alg_type = "robust", order_by = "pred", sum_type = "A",
-                      C_delta = NA, iter_round = 100){
+                      C_delta = NA, iter_round = 100, sum_known = FALSE, scale = 0.8){
   n = length(dat$A)
   if(alg_type == "linear") {
     pred_func = em_linear
@@ -25,7 +27,7 @@ i_Wilcoxon = function(dat, alg_type = "robust", order_by = "pred", sum_type = "A
   k <- 1; X_seq = vector(length = 0); S_cum = rep(0, n); increase = TRUE; model_correct = TRUE
   while(k <= n){
     if (k %% min(iter_round, n/5) == 1) {
-      pred <- pred_func(dat, cand_set = cand_set, C_delta = C_delta, iter = 20)
+      pred <- pred_func(dat, cand_set = cand_set, C_delta = C_delta, iter = 20, sum_known = sum_known)
     }
     if (order_by == "pred") {
       inc_ind <- which.max(pred*(!cand_set) + (-1)*cand_set); cand_set[inc_ind] <- TRUE
@@ -54,9 +56,12 @@ i_Wilcoxon = function(dat, alg_type = "robust", order_by = "pred", sum_type = "A
   } else if (sum_type == "signed_A") {
     X_seq = (2*ordered_A - 1)*(2*(ordered_pred > 1/2) - 1)
   }
-  
-  S_cum = cumsum(X_seq)
-  p_val = 2*min(exp(-(abs(S_cum) / (sqrt(2/n)*k + sqrt(n/8)))^2))
+  if (sum_known) {
+    remain
+  } else {
+    S_cum = scale*cumsum(X_seq)
+    p_val = 2*min(exp(-(abs(S_cum) / (sqrt(2/n)*k + sqrt(n/8)))^2))
+  }
   return(p_val)
 }
 
@@ -65,17 +70,34 @@ i_Wilcoxon = function(dat, alg_type = "robust", order_by = "pred", sum_type = "A
 # dat:      a data frame of outcome (Y), treatment assignment (A), and covariates (X.)
 # cand_set: a vector of indicators for whether subject i is ordered 
 # iter:     number of interations within a single EM algorithm
-em_linear <- function(dat, cand_set, iter, C_delta = NA){
+# C_delta:  scale of treatment effect, used when alg_type = "oracle"
+# sum_known:whether the total number of treatments are known
+em_linear <- function(dat, cand_set, iter, C_delta = NA, sum_known = TRUE){
   n <- length(dat$A); Y <- dat$Y - min(dat$Y)
-  mu_1 = rep(0.1, n); mu_0 = rep(0, n)
-  for (i in 1:iter) {
-    w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+  if (sum_known) {
+    w = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
       cand_set*dat$A
-    w[is.na(w)] = 1/2
-    if(any(w != 1)){
-      mu_0 = lm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+    for (i in 1:iter) {
+      if(any(w != 1)){
+        mu_0 = lm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+      }
+      mu_1 = lm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
+        cand_set*dat$A
     }
-    mu_1 = lm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+  } else {
+    mu_1 = rep(0.1, n); mu_0 = rep(0, n)
+    for (i in 1:iter) {
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = 1/2
+      if(any(w != 1)){
+        mu_0 = lm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+      }
+      mu_1 = lm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+    }
   }
   return(w)
 }
@@ -84,19 +106,37 @@ em_linear <- function(dat, cand_set, iter, C_delta = NA){
 # dat:      a data frame of outcome (Y), treatment assignment (A), and covariates (X.)
 # cand_set: a vector of indicators for whether subject i is ordered 
 # iter:     number of interations within a single EM algorithm
-em_robust <- function(dat, cand_set, iter, C_delta = NA){
+# C_delta:  scale of treatment effect, used when alg_type = "oracle"
+# sum_known:whether the total number of treatments are known
+em_robust <- function(dat, cand_set, iter, C_delta = NA, sum_known = TRUE){
   n <- length(dat$A); Y <- dat$Y - min(dat$Y); 
-  mu_1 = rep(0.1, n); mu_0 = rep(0, n)
-  for (i in 1:iter) {
-    w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+  if (sum_known) {
+    w = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
       cand_set*dat$A
-    w[is.na(w)] = 1/2
-    if (any(w != 1)) {
-      mu_0 = rlm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+    for (i in 1:iter) {
+      if (any(w != 1)) {
+        mu_0 = rlm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+      }
+      mu_1 = rlm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
+        cand_set*dat$A
     }
-    mu_1 = rlm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+  } else {
+    mu_1 = rep(0.1, n); mu_0 = rep(0, n)
+    for (i in 1:iter) {
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = 1/2
+      if (any(w != 1)) {
+        mu_0 = rlm(Y ~ (. - A)^2, data = dat, weights = 1 - w)$fitted.values
+      }
+      mu_1 = rlm(Y ~ (. - A)^2, data = dat, weights = w)$fitted.values
+    }
+    w[is.na(w)] = 1/2
   }
-  w[is.na(w)] = 1/2
+  
   return(w)
 }
 
@@ -118,21 +158,42 @@ em_oracle <- function(dat, cand_set, iter, C_delta){
 # dat:      a data frame of outcome (Y), treatment assignment (A), and covariates (X.)
 # cand_set: a vector of indicators for whether subject i is ordered 
 # iter:     number of interations within a single EM algorithm
-em_quadratic <- function(dat, cand_set, iter, C_delta = NA){
+# C_delta:  scale of treatment effect, used when alg_type = "oracle"
+# sum_known:whether the total number of treatments are known
+em_quadratic <- function(dat, cand_set, iter, C_delta = NA, sum_known = TRUE){
   n <- length(dat$A); Y <- dat$Y - min(dat$Y); 
-  mu_1 = rep(0.1, n); mu_0 = rep(0, n)
-  for (i in 1:iter) {
-    w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+  # mu_1 = rep(0.1, n); mu_0 = rep(0, n)
+  if (sum_known) {
+    w = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
       cand_set*dat$A
-    w[is.na(w)] = 1/2
-    if(any (w != 1)){
-      mu_0 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = 1 - w)$fitted.values
-      mu_0[is.na(mu_0)] = 0
+    for (i in 1:iter) {
+      if(any (w != 1)){
+        mu_0 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = 1 - w)$fitted.values
+        mu_0[is.na(mu_0)] = 0
+      }
+      mu_1 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = w)$fitted.values
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = (!cand_set) * (sum(dat$A[!cand_set])/sum(!cand_set)) +
+        cand_set*dat$A
     }
-    mu_1 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = w)$fitted.values
+  } else {
+    mu_1 = rep(0.1, n); mu_0 = rep(0, n)
+    for (i in 1:iter) {
+      w = (!cand_set) * dnorm(dat$Y - mu_1)/(dnorm(dat$Y - mu_1) + dnorm(dat$Y - mu_0)) +
+        cand_set*dat$A
+      w[is.na(w)] = 1/2
+      if (any(w != 1)) {
+        mu_0 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = 1 - w)$fitted.values
+        mu_0[is.na(mu_0)] = 0
+      }
+      mu_1 = rlm(Y ~ (. - A)^2 + I(X.3^2), data = dat, weights = w)$fitted.values
+    }
   }
   return(w)
 }
+
+
 
 
 

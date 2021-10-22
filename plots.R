@@ -32,50 +32,48 @@ plot_df = function(mean_power, compare_methods,
 
 
 ############## Figure 2
-mode = "linear_updated"
-load(paste("result/",mode,".Rdata", sep = ""))
-mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
-                                                        byrow = TRUE, nrow = length(x)))})
-sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
+mode = "server_linear_bell"
+load(paste(dirname(getwd()), "/result/",mode,".Rdata", sep = ""))
+mean_power = sapply(p_val, function(x){colMeans(matrix(unlist(x) < alpha,
+                                                        byrow = TRUE, nrow = length(x)), na.rm = TRUE)})
+colnames(mean_power) = (0:5)*0.4
+sd_power = sapply(p_val, function(x){colSes(matrix(unlist(x) < alpha,
                                                     byrow = TRUE, nrow = length(x)))})
-legend_name = names(result[[1]][[1]]); legend_name[c(1,8)] = c("CovAdj-Wilcoxon", "i-Wilcoxon")
+legend_name = methods_interactive;  legend_name[c(1, 3, 10, 11, 12)] = c("CovAdj-Wilcoxon", "CovAdj-Wilcoxon-robust-quadratic", "i-bet", "i-bet-robust-linear", "i-bet-robust-quadratic")
 legend_name = factor(legend_name, levels = legend_name)
-compare_methods = c("CovAdj-Wilcoxon", "linear-CATE-test",
-                    "i-Wilcoxon")
+compare_methods = c("linear-CATE-test",  "CovAdj-Wilcoxon", "i-bet")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
-            legend_name = legend_name)
-ggsave(filename = paste("figure/interactive_",mode,".eps", sep = ""),
+            legend_name = legend_name, pos = c(0.28, 0.6), legend_size = 6)
+ggsave(filename = paste(dirname(getwd()), "/figure/i_bet_",mode,".png", sep = ""),
        plot = p, width = 4, height = 3.6)
 
 ############## Figure 3
-mode = "linear_control_skewed_updated"
+mode = "server_linear_skewed"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
+colnames(mean_power) = (0:5)*0.4
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                     byrow = TRUE, nrow = length(x)))})
-legend_name = names(result[[1]][[1]]); legend_name[c(6,8,9)] = c("i-Wilcoxon-robust_old", "i-Wilcoxon-original", "i-Wilcoxon-robust")
+legend_name = methods_interactive;  legend_name[c(1, 3, 10, 11, 12)] = c("CovAdj-Wilcoxon", "CovAdj-Wilcoxon-robust-quadratic", "i-bet-original", "i-bet-robust", "i-bet-robust-quadratic")
 legend_name = factor(legend_name, levels = legend_name)
-compare_methods = c("CovAdj-Wilcoxon-robust", "linear-CATE-test",
-                    "i-Wilcoxon-original", "i-Wilcoxon-robust")
+compare_methods = c("linear-CATE-test",  "CovAdj-Wilcoxon-robust", "i-bet-original", "i-bet-robust")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name, pos = c(0.7, 0.6))
 ggsave(filename = paste("figure/interactive_",mode,".eps", sep = ""),
        plot = p, width = 4, height = 3.6)
 
+
 ############## Figure 4
-mode = "quadratic_updated"
+mode = "server_linear_cauchy"
 load(paste("result/",mode,".Rdata", sep = ""))
 mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
 sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
                                                         byrow = TRUE, nrow = length(x)))})
-legend_name = names(result[[1]][[1]]); 
-legend_name[c(6, 7, 9, 10)] = c("i-Wilcoxon-robust_old", "i-Wilcoxon-quadratic_old",
-                                "i-Wilcoxon-robust", "i-Wilcoxon-quadratic")
+legend_name = methods_interactive;  legend_name[c(1, 3, 10, 11, 12)] = c("CovAdj-Wilcoxon", "CovAdj-Wilcoxon-robust-quadratic", "i-bet-original", "i-bet-robust", "i-bet-robust-quadratic")
 legend_name = factor(legend_name, levels = legend_name)
-compare_methods = c("CovAdj-Wilcoxon-quadratic", "linear-CATE-test",
-                    "i-Wilcoxon-robust", "i-Wilcoxon-quadratic")
+compare_methods = c("linear-CATE-test",  "CovAdj-Wilcoxon-robust", "i-bet-original", "i-bet-robust")
 p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name, pos = c(0.75, 0.5), legend_size = 6)
 ggsave(filename = paste("figure/interactive_",mode,".eps", sep = ""),
@@ -83,6 +81,24 @@ ggsave(filename = paste("figure/interactive_",mode,".eps", sep = ""),
 
 
 
+############## Figure 5
+mode = "server_quadratic_bell"
+load(paste("result/",mode,".Rdata", sep = ""))
+mean_power = sapply(result, function(x){colMeans(matrix(unlist(x) < alpha,
+                                                        byrow = TRUE, nrow = length(x)))})
+sd_power = sapply(result, function(x){colSes(matrix(unlist(x) < alpha,
+                                                    byrow = TRUE, nrow = length(x)))})
+legend_name = methods_interactive;  legend_name[c(1, 3, 10, 11, 12)] = c("CovAdj-Wilcoxon", "CovAdj-Wilcoxon-robust-quadratic", "i-bet-original", "i-bet-robust-linear", "i-bet-robust-quadratic")
+legend_name = factor(legend_name, levels = legend_name)
+compare_methods = c("linear-CATE-test",  "CovAdj-Wilcoxon-robust-quadratic", "i-bet-robust-linear", "i-bet-robust-quadratic")
+p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
+            legend_name = legend_name, pos = c(0.75, 0.5), legend_size = 6)
+ggsave(filename = paste("figure/interactive_",mode,".eps", sep = ""),
+       plot = p, width = 4, height = 3.6)
+
+
+
+if(0){
 ############### Figure 5(a)
 mode = "dense_weak"
 load(paste("result/",mode,".Rdata", sep = ""))
@@ -905,7 +921,7 @@ p = plot_df(mean_power = mean_power, compare_methods = compare_methods,
             legend_name = legend_name, pos = "none")
 ggsave(filename = paste("figure/interactive_",mode,"_compare.eps", sep = ""),
        plot = p, width = 4, height = 3.6)
-
+}
 
 
 
